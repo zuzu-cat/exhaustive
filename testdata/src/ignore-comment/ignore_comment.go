@@ -27,7 +27,8 @@ func _b() {
 	var d Direction
 
 	// this should not report.
-	switch d { //exhaustive:ignore
+	//exhaustive:ignore ... some explanation on why ...
+	switch d {
 	case N:
 	case S:
 	case W:
@@ -43,17 +44,109 @@ func _b() {
 	}
 }
 
+func _c0() {
+	var d Direction
+
+	// this should report: according to go/ast, the comment is not considered to
+	// be associated with the switch statement node.
+	switch d { //exhaustive:ignore // want "^missing cases in switch of type Direction: E, directionInvalid$"
+	case N:
+	case S:
+	case W:
+	default:
+	}
+
+	// this should report.
+	switch d { // want "^missing cases in switch of type Direction: E, directionInvalid$"
+	case N:
+	case S:
+	case W:
+	default:
+	}
+}
+
+func _c1() {
+	var d Direction
+
+	// this should report: according to go/ast, the comment is not considered to
+	// be associated with the switch statement node.
+	switch d { // want "^missing cases in switch of type Direction: E, directionInvalid$"
+	//exhaustive:ignore
+	case N:
+	case S:
+	case W:
+	default:
+	}
+
+	// this should report.
+	switch d { // want "^missing cases in switch of type Direction: E, directionInvalid$"
+	case N:
+	case S:
+	case W:
+	default:
+	}
+}
+
+func _d() {
+	// this should report.
+	switch (func() Direction { // want "^missing cases in switch of type Direction: E, directionInvalid$"
+		// this should not report.
+		var x Direction
+		//exhaustive:ignore
+		switch x {
+		case N, S:
+		}
+		return N
+	})() {
+	case N:
+	case S:
+	case W:
+	default:
+	}
+
+	var d Direction
+
+	// this should report.
+	switch d { // want "^missing cases in switch of type Direction: E, directionInvalid$"
+	case N:
+	case S:
+	case W:
+	default:
+	}
+}
+
 func _nested() {
 	var d Direction
 
 	// this should not report.
-	switch d { //exhaustive:ignore
+	//exhaustive:ignore
+	switch d {
 	case N:
 	case S:
 	case W:
 	default:
 		// this should report.
 		switch d { // want "^missing cases in switch of type Direction: E, directionInvalid$"
+		case N:
+		case S:
+		case W:
+		default:
+		}
+	}
+}
+
+func _reverse_nested() {
+	var d Direction
+
+	// this should report.
+	switch d { // want "^missing cases in switch of type Direction: E, directionInvalid$"
+	case N:
+	case S:
+	case W:
+	default:
+		// this should not report.
+		//exhaustive:ignore
+		switch d {
 		case N:
 		case S:
 		case W:
