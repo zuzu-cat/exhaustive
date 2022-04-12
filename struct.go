@@ -97,9 +97,7 @@ type structConfig struct {
 // unwrapped struct type and type name
 func resolveStructType(compositeLiteralType types.Type) (_ *types.TypeName, _ *types.Struct, isStruct bool) {
 	t := compositeLiteralType
-	i := 0
 	for {
-		i += 1
 		switch v := t.(type) {
 		case *types.Pointer:
 			t = v.Elem()
