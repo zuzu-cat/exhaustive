@@ -110,7 +110,7 @@ func TestMakeDiagnostic(t *testing.T) {
 	checkEnumMembersLiteral("Biome", allMembers)
 	missingMembers := map[string]struct{}{"Savanna": {}, "Desert": {}}
 
-	got := makeDiagnostic(sw, samePkg, enumTyp, allMembers, missingMembers)
+	got := makeSwitchDiagnostic(sw, samePkg, enumTyp, allMembers, missingMembers)
 	want := analysis.Diagnostic{
 		Pos:     1,
 		End:     11,
@@ -233,7 +233,7 @@ func TestChecklist(t *testing.T) {
 	}
 
 	t.Run("main operations", func(t *testing.T) {
-		checklist := makeChecklist(em, enumPkg, false, nil)
+		checklist := makeSwitchChecklist(em, enumPkg, false, nil)
 		checkRemaining(t, checklist, map[string]struct{}{
 			"A": {},
 			"B": {},
@@ -297,7 +297,7 @@ func TestChecklist(t *testing.T) {
 
 	t.Run("ignore regexp", func(t *testing.T) {
 		t.Run("nil means no filtering", func(t *testing.T) {
-			checklist := makeChecklist(em, enumPkg, false, nil)
+			checklist := makeSwitchChecklist(em, enumPkg, false, nil)
 			checkRemaining(t, checklist, map[string]struct{}{
 				"A": {},
 				"B": {},
@@ -310,7 +310,7 @@ func TestChecklist(t *testing.T) {
 		})
 
 		t.Run("basic", func(t *testing.T) {
-			checklist := makeChecklist(em, enumPkg, false, regexp.MustCompile(`^github.com/example/bar-go.G$`))
+			checklist := makeSwitchChecklist(em, enumPkg, false, regexp.MustCompile(`^github.com/example/bar-go.G$`))
 			checkRemaining(t, checklist, map[string]struct{}{
 				"A": {},
 				"B": {},
@@ -322,12 +322,12 @@ func TestChecklist(t *testing.T) {
 		})
 
 		t.Run("matches multiple", func(t *testing.T) {
-			checklist := makeChecklist(em, enumPkg, false, regexp.MustCompile(`^github.com/example/bar-go`))
+			checklist := makeSwitchChecklist(em, enumPkg, false, regexp.MustCompile(`^github.com/example/bar-go`))
 			checkRemaining(t, checklist, map[string]struct{}{})
 		})
 
 		t.Run("uses package path, not package name", func(t *testing.T) {
-			checklist := makeChecklist(em, enumPkg, false, regexp.MustCompile(`bar.G`))
+			checklist := makeSwitchChecklist(em, enumPkg, false, regexp.MustCompile(`bar.G`))
 			checkRemaining(t, checklist, map[string]struct{}{
 				"A": {},
 				"B": {},
@@ -364,7 +364,7 @@ func TestChecklist(t *testing.T) {
 		}
 		checkEnumMembersLiteral("TestChecklist blank identifier", em)
 
-		checklist := makeChecklist(em, enumPkg, true, nil)
+		checklist := makeSwitchChecklist(em, enumPkg, true, nil)
 		checkRemaining(t, checklist, map[string]struct{}{
 			"A": {},
 			"B": {},
@@ -401,7 +401,7 @@ func TestChecklist(t *testing.T) {
 		checkEnumMembersLiteral("TestChecklist lowercase", em)
 
 		t.Run("include", func(t *testing.T) {
-			checklist := makeChecklist(em, enumPkg, true, nil)
+			checklist := makeSwitchChecklist(em, enumPkg, true, nil)
 			checkRemaining(t, checklist, map[string]struct{}{
 				"A":         {},
 				"B":         {},
@@ -415,7 +415,7 @@ func TestChecklist(t *testing.T) {
 		})
 
 		t.Run("don't include", func(t *testing.T) {
-			checklist := makeChecklist(em, enumPkg, false, nil)
+			checklist := makeSwitchChecklist(em, enumPkg, false, nil)
 			checkRemaining(t, checklist, map[string]struct{}{
 				"A": {},
 				"B": {},
