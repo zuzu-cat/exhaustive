@@ -127,7 +127,7 @@ func checkStructLiterals(pass *analysis.Pass, inspect *inspector.Inspector, cfg 
 	})
 }
 
-// analyzeStructLiteralFields analyzers the strings in the supplied struct
+// analyzeStructLiteralFields analyzes the fields in the supplied struct
 // literal. The found function is called for each field found in the struct
 // literal.
 // The isUnkeyedLiteral return value indicates whether the struct literal only
