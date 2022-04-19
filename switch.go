@@ -32,6 +32,10 @@ const (
 	resultTagNotEnum             = "switch tag not known enum type"
 	resultSwitchIgnoreComment    = "switch statement has ignore comment"
 	resultSwitchNoEnforceComment = "switch statement has no enforce comment"
+	resultStructNoEnforceComment = "struct literal has no enforce comment"
+	resultCompositeLitNotAStruct = "composite literal is not a struct"
+	resultStructUnkeyedLiteral   = "composite literal is unkeyed"
+	resultStructFieldsAccounted  = "requisite struct fields accounted for"
 	resultEnumMembersAccounted   = "requisite enum members accounted for"
 	resultDefaultCaseSuffices    = "default case presence satisfies exhaustiveness"
 	resultReportedDiagnostic     = "reported diagnostic"
@@ -113,7 +117,7 @@ func switchStmtChecker(pass *analysis.Pass, cfg config) nodeVisitor {
 
 		samePkg := tagPkg == pass.Pkg // do the switch statement and the switch tag type (i.e. enum type) live in the same package?
 		checkUnexported := samePkg    // we want to include unexported members in the exhaustiveness check only if we're in the same package
-		checklist := makeChecklist(members, tagPkg, checkUnexported, cfg.ignoreEnumMembers)
+		checklist := makeSwitchChecklist(members, tagPkg, checkUnexported, cfg.ignoreEnumMembers)
 
 		hasDefaultCase := analyzeSwitchClauses(sw, pass.TypesInfo, func(val constantValue) {
 			checklist.found(val)
@@ -130,7 +134,7 @@ func switchStmtChecker(pass *analysis.Pass, cfg config) nodeVisitor {
 			// So don't report.
 			return true, resultDefaultCaseSuffices
 		}
-		pass.Report(makeDiagnostic(sw, samePkg, enumTyp, members, checklist.remaining()))
+		pass.Report(makeSwitchDiagnostic(sw, samePkg, enumTyp, members, checklist.remaining()))
 		return true, resultReportedDiagnostic
 	}
 }
@@ -290,7 +294,7 @@ func diagnosticEnumTypeName(enumType *types.TypeName, samePkg bool) string {
 // Makes a "missing cases in switch" diagnostic.
 // samePkg should be true if the enum type and the switch statement are defined
 // in the same package.
-func makeDiagnostic(sw *ast.SwitchStmt, samePkg bool, enumTyp enumType, allMembers enumMembers, missingMembers map[string]struct{}) analysis.Diagnostic {
+func makeSwitchDiagnostic(sw *ast.SwitchStmt, samePkg bool, enumTyp enumType, allMembers enumMembers, missingMembers map[string]struct{}) analysis.Diagnostic {
 	message := fmt.Sprintf("missing cases in switch of type %s: %s",
 		diagnosticEnumTypeName(enumTyp.TypeName, samePkg),
 		strings.Join(diagnosticMissingMembers(missingMembers, allMembers), ", "))
@@ -316,7 +320,7 @@ type checklist struct {
 	checkl map[string]struct{}
 }
 
-func makeChecklist(em enumMembers, enumPkg *types.Package, includeUnexported bool, ignore *regexp.Regexp) *checklist {
+func makeSwitchChecklist(em enumMembers, enumPkg *types.Package, includeUnexported bool, ignore *regexp.Regexp) *checklist {
 	checkl := make(map[string]struct{})
 
 	add := func(memberName string) {

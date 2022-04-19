@@ -277,5 +277,10 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		checkGeneratedFiles:        fCheckGenerated,
 		ignoreEnumMembers:          fIgnoreEnumMembers.value(),
 	})
+
+	checkStructLiterals(pass, inspect, structConfig{
+		checkGeneratedFiles: fCheckGenerated,
+	})
+
 	return nil, nil
 }
